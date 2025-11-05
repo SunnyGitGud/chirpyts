@@ -7,8 +7,10 @@ import { MiddlewareLogResponses, MiddlewareMetricsIns } from "./middleware.js";
 import { config } from "./config.js";
 import path from "path"
 import fs from "fs"
-import { badRequest400, MiddlewareErrHandle } from "./error.js";
+import { badRequest400, forbidden403, MiddlewareErrHandle } from "./error.js";
 import { createUser } from "./db/queries/users.js";
+import { respondWithJSON } from "./json.js";
+import { reset } from "./db/queries/users.js"
 
 const migrationClient = postgres(config.db.url, { max: 1 })
 await migrate(drizzle(migrationClient), config.db.migrationConfig)
@@ -30,6 +32,7 @@ app.get("/api/healthz", MiddlewareMetricsIns, async (req, res, next) => {
   }
 });
 app.post("/admin/reset", handerMetricReset);
+
 app.post("/api/validate_chirp", async (req, res, next) => {
   try {
     await handlerchirp(req, res);
@@ -38,7 +41,9 @@ app.post("/api/validate_chirp", async (req, res, next) => {
   }
 })
 
-app.post("/api/users")
+app.post("/api/users", (req, res, next) => {
+  Promise.resolve(handlerUsersCreate(req, res)).catch(next);
+})
 
 app.get("/admin/metrics", (_req, res) => {
   const filePath = path.join(process.cwd(), "src/app/visited.html")
@@ -63,8 +68,15 @@ async function handlerReadiness(_req: Request, res: Response): Promise<void> {
 
 
 async function handerMetricReset(_req: Request, res: Response): Promise<void> {
-  config.api.fileServerHits = 0
-  res.status(200).send("OK")
+  if (config.api.platform !== "dev") {
+    console.log(config.api.platform);
+    throw new forbidden403("Reset is only allowed in dev environment.")
+  }
+  config.api.fileServerHits = 0;
+  await reset();
+
+  res.write("Hits reset to 0");
+  res.end();
 }
 
 async function handlerchirp(req: Request, res: Response): Promise<void> {
@@ -105,5 +117,10 @@ async function handlerUsersCreate(req: Request, res: Response): Promise<void> {
   if (!user) {
     throw new Error("Could not create user")
   }
-
+  respondWithJSON(res, 201, {
+    id: user.id,
+    email: user.email,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  })
 }

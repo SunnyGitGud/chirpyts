@@ -1,4 +1,4 @@
-import { config } from "./config";
+import { config } from "./config.js";
 export function MiddlewareLogResponses(req, res, next) {
     res.on("finish", () => {
         if (res.statusCode < 200 || res.statusCode >= 300) {
@@ -8,6 +8,6 @@ export function MiddlewareLogResponses(req, res, next) {
     next();
 }
 export function MiddlewareMetricsIns(_req, _res, next) {
-    config.fileServerHits++;
+    config.api.fileServerHits++;
     next();
 }

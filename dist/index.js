@@ -1,13 +1,20 @@
 import express from "express";
+import postgres from "postgres";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { drizzle } from "drizzle-orm/postgres-js";
 import { MiddlewareLogResponses, MiddlewareMetricsIns } from "./middleware.js";
 import { config } from "./config.js";
 import path from "path";
 import fs from "fs";
-import { badRequest400, MiddlewareErrHandle } from "./error.js";
+import { badRequest400, forbidden403, MiddlewareErrHandle } from "./error.js";
+import { createUser } from "./db/queries/users.js";
+import { respondWithJSON } from "./json.js";
+import { reset } from "./db/queries/users.js";
+const migrationClient = postgres(config.db.url, { max: 1 });
+await migrate(drizzle(migrationClient), config.db.migrationConfig);
 const app = express();
-const PORT = 8080;
-app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
+app.listen(config.api.port, () => {
+    console.log(`Server is running at http://localhost:${config.api.port}`);
 });
 app.use(MiddlewareLogResponses);
 app.use(express.json());
@@ -29,7 +36,9 @@ app.post("/api/validate_chirp", async (req, res, next) => {
         next(err);
     }
 });
-app.use(MiddlewareErrHandle);
+app.post("/api/users", (req, res, next) => {
+    Promise.resolve(handlerUsersCreate(req, res)).catch(next);
+});
 app.get("/admin/metrics", (_req, res) => {
     const filePath = path.join(process.cwd(), "src/app/visited.html");
     fs.readFile(filePath, "utf8", (err, data) => {
@@ -37,18 +46,25 @@ app.get("/admin/metrics", (_req, res) => {
             res.status(500).send("error loading HTML");
             return;
         }
-        const html = data.replace("NUM", config.fileServerHits.toString());
+        const html = data.replace("NUM", config.api.fileServerHits.toString());
         res.set("Content-Type", "text/html; charset=utf-8");
         res.send(html);
     });
 });
+app.use(MiddlewareErrHandle);
 async function handlerReadiness(_req, res) {
     res.set("Content-Type", "text/plain");
     res.send("OK");
 }
 async function handerMetricReset(_req, res) {
-    config.fileServerHits = 0;
-    res.status(200).send("OK");
+    if (config.api.platform !== "dev") {
+        console.log(config.api.platform);
+        throw new forbidden403("Reset is only allowed in dev environment.");
+    }
+    config.api.fileServerHits = 0;
+    await reset();
+    res.write("Hits reset to 0");
+    res.end();
 }
 async function handlerchirp(req, res) {
     const parsedBody = req.body;
@@ -71,4 +87,20 @@ async function handlerchirp(req, res) {
     }
     const cleanedBody = words.join(" ");
     res.status(200).json({ cleanedBody: cleanedBody });
+}
+async function handlerUsersCreate(req, res) {
+    const params = req.body;
+    if (!params.email) {
+        throw new badRequest400("Missing required fields");
+    }
+    const user = await createUser({ email: params.email });
+    if (!user) {
+        throw new Error("Could not create user");
+    }
+    respondWithJSON(res, 201, {
+        id: user.id,
+        email: user.email,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+    });
 }

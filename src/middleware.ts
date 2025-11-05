@@ -1,6 +1,6 @@
 import { NextFunction } from "express";
 import { Request, Response } from "express"
-import { config } from "./config"
+import { config } from "./config.js"
 
 
 export function MiddlewareLogResponses(req: Request, res: Response, next: NextFunction): void {
