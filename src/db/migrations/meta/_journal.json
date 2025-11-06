@@ -8,6 +8,13 @@
       "when": 1762378157089,
       "tag": "0000_high_supreme_intelligence",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1762466957056,
+      "tag": "0001_lush_senator_kelly",
+      "breakpoints": true
     }
   ]
 }
