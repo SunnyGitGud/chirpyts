@@ -1,6 +1,7 @@
 import * as argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import { unAuthorized401 } from "./error.js";
+import crypto from "crypto";
 export async function hashPassword(password) {
     const hash = await argon2.hash(password);
     return hash;
@@ -42,4 +43,7 @@ export function getBearerToken(req) {
         throw new unAuthorized401("Empty Bearer token");
     }
     return token;
+}
+export function makeRefreshToken() {
+    return crypto.randomBytes(32).toString("hex");
 }

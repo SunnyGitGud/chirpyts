@@ -10,7 +10,7 @@ import { handlerReadiness } from "./api/readiness.js";
 import { metricsHandler } from "./api/metrics.js";
 import { handlerUsersCreate } from "./api/userCreate.js";
 import { handlerchirp, handlerChirpsRetrieve, handlerGetChirpByID } from "./api/validateChirp.js";
-import { handlerLogin } from "./api/login.js";
+import { handlerLogin, handleRefresh, handleRevoke } from "./api/login.js";
 const migrationClient = postgres(config.db.url, { max: 1 });
 await migrate(drizzle(migrationClient), config.db.migrationConfig);
 const app = express();
@@ -40,6 +40,12 @@ app.get("/api/chirps", (req, res, next) => {
 });
 app.get("/api/chirps/:chirpID", (req, res, next) => {
     Promise.resolve(handlerGetChirpByID(req, res)).catch(next);
+});
+app.post("/api/refresh", (req, res, next) => {
+    Promise.resolve(handleRefresh(req, res)).catch(next);
+});
+app.post("/api/revoke", (req, res, next) => {
+    Promise.resolve(handleRevoke(req, res)).catch(next);
 });
 app.get("/admin/metrics", metricsHandler);
 app.use(MiddlewareErrHandle);

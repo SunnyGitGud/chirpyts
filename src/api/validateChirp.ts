@@ -11,7 +11,7 @@ export async function handlerchirp(req: Request, res: Response): Promise<void> {
   }
   const params: parameter = req.body
   const token = getBearerToken(req)
-  const userId = validateJWT(token, config.api.secret)
+  const userId = validateJWT(token, config.jwt.secret)
 
   const cleaned = validateChirp(params.body)
   const Chirp = await createChirp({ body: cleaned, userId: userId })

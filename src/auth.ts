@@ -2,6 +2,7 @@ import * as argon2 from "argon2";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { unAuthorized401 } from "./error.js";
 import { Request } from "express";
+import crypto from "crypto";
 
 export async function hashPassword(password: string) {
   const hash = await argon2.hash(password)
@@ -51,3 +52,7 @@ export function getBearerToken(req: Request): string {
   return token
 }
 
+
+export function makeRefreshToken() {
+  return crypto.randomBytes(32).toString("hex")
+}

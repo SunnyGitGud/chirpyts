@@ -6,7 +6,7 @@ import { config } from "../config.js";
 export async function handlerchirp(req, res) {
     const params = req.body;
     const token = getBearerToken(req);
-    const userId = validateJWT(token, config.api.secret);
+    const userId = validateJWT(token, config.jwt.secret);
     const cleaned = validateChirp(params.body);
     const Chirp = await createChirp({ body: cleaned, userId: userId });
     respondWithJSON(res, 201, Chirp);
