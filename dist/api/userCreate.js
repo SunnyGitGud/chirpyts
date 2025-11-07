@@ -1,7 +1,8 @@
-import { badRequest400 } from "../error.js";
+import { badRequest400, unAuthorized401 } from "../error.js";
 import { respondWithJSON } from "../json.js";
-import { createUser } from "../db/queries/users.js";
-import { hashPassword } from "../auth.js";
+import { createUser, updateUserbyID } from "../db/queries/users.js";
+import { getBearerToken, hashPassword, validateJWT } from "../auth.js";
+import { config } from "../config.js";
 export async function handlerUsersCreate(req, res) {
     const params = req.body;
     if (!params.email || !params.password) {
@@ -19,4 +20,27 @@ export async function handlerUsersCreate(req, res) {
         updatedAt: user.updatedAt,
     };
     respondWithJSON(res, 201, userWithoutPass);
+}
+export async function handlerUpdateUser(req, res) {
+    const accessToken = getBearerToken(req);
+    if (!accessToken) {
+        throw new unAuthorized401("acces token unavailable");
+    }
+    const userId = validateJWT(accessToken, config.jwt.secret);
+    const params = req.body;
+    if (!params.email || !params.password) {
+        throw new unAuthorized401("email and password unavailable");
+    }
+    const hashedPass = await hashPassword(params.password);
+    const [update] = await updateUserbyID(userId, params.email, hashedPass);
+    if (!update) {
+        throw new unAuthorized401("failed to update email and password");
+    }
+    const userWithoutPass = {
+        id: update.id,
+        email: update.email,
+        createdAt: update.createdAt,
+        updatedAt: update.updatedAt,
+    };
+    respondWithJSON(res, 200, userWithoutPass);
 }

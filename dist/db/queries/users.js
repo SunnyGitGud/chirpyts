@@ -15,3 +15,14 @@ export async function reset() {
 export async function getUserByEmail(emailIn) {
     return db.select().from(users).where(eq(users.email, emailIn));
 }
+export async function updateUserbyID(userID, email, hashed_password) {
+    return db
+        .update(users)
+        .set({
+        email,
+        hashed_password,
+        updatedAt: new Date(),
+    })
+        .where(eq(users.id, userID))
+        .returning();
+}

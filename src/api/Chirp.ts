@@ -1,9 +1,10 @@
 import { createChirp, getChirpbyID, getChirps } from "../db/queries/chirps.js";
-import { badRequest400 } from "../error.js";
+import { badRequest400, unAuthorized401 } from "../error.js";
 import { Request, Response } from "express"
 import { respondWithJSON } from "../json.js";
 import { getBearerToken, validateJWT } from "../auth.js";
 import { config } from "../config.js";
+import { ne } from "drizzle-orm";
 
 export async function handlerchirp(req: Request, res: Response): Promise<void> {
   type parameter = {
@@ -11,6 +12,9 @@ export async function handlerchirp(req: Request, res: Response): Promise<void> {
   }
   const params: parameter = req.body
   const token = getBearerToken(req)
+  if (!token) {
+    throw new unAuthorized401("acces token unavailable")
+  }
   const userId = validateJWT(token, config.jwt.secret)
 
   const cleaned = validateChirp(params.body)
@@ -28,6 +32,16 @@ export async function handlerGetChirpByID(req: Request, res: Response) {
   const [chirp] = await getChirpbyID(req.params.chirpID)
   respondWithJSON(res, 200, chirp)
 }
+
+export async function handlerDeleteChirp(req: Request, res: Response) {
+  const accessToken = getBearerToken(req)
+  const userId = validateJWT(accessToken, config.jwt.secret)
+  if (!userId) {
+    throw new unAuthorized401("user not authorized")
+  }
+}
+
+
 
 function validateChirp(body: string) {
   const maxChirpLength = 140;
