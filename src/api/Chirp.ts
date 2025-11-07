@@ -1,10 +1,9 @@
-import { createChirp, getChirpbyID, getChirps } from "../db/queries/chirps.js";
-import { badRequest400, unAuthorized401 } from "../error.js";
+import { createChirp, deleteChirp, getChirpbyID, getChirps } from "../db/queries/chirps.js";
+import { badRequest400, forbidden403, notFound404, unAuthorized401 } from "../error.js";
 import { Request, Response } from "express"
 import { respondWithJSON } from "../json.js";
 import { getBearerToken, validateJWT } from "../auth.js";
 import { config } from "../config.js";
-import { ne } from "drizzle-orm";
 
 export async function handlerchirp(req: Request, res: Response): Promise<void> {
   type parameter = {
@@ -30,15 +29,33 @@ export async function handlerChirpsRetrieve(_req: Request, res: Response) {
 
 export async function handlerGetChirpByID(req: Request, res: Response) {
   const [chirp] = await getChirpbyID(req.params.chirpID)
+  if (!chirp) {
+    throw new notFound404(`Chirp not found`);
+  }
   respondWithJSON(res, 200, chirp)
 }
 
-export async function handlerDeleteChirp(req: Request, res: Response) {
-  const accessToken = getBearerToken(req)
-  const userId = validateJWT(accessToken, config.jwt.secret)
-  if (!userId) {
-    throw new unAuthorized401("user not authorized")
+export async function handlerChirpsDelete(req: Request, res: Response) {
+  const { chirpId } = req.params;
+
+  const token = getBearerToken(req);
+  const userId = validateJWT(token, config.jwt.secret);
+
+  const [chirp] = await getChirpbyID(chirpId);
+  if (!chirp) {
+    throw new notFound404(`Chirp with chirpId: ${chirpId} not found`);
   }
+
+  if (chirp.userId !== userId) {
+    throw new forbidden403("You can't delete this chirp");
+  }
+
+  const deleted = await deleteChirp(chirpId);
+  if (!deleted) {
+    throw new Error(`Failed to delete chirp with chirpId: ${chirpId}`);
+  }
+
+  res.status(204).send();
 }
 
 
