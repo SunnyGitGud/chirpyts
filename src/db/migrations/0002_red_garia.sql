@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "hashed_password, {length: 256}" varchar DEFAULT 'unset' NOT NULL;
