@@ -1,6 +1,7 @@
 import * as argon2 from "argon2";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { unAuthorized401 } from "./error";
+import { unAuthorized401 } from "./error.js";
+import { Request } from "express";
 
 export async function hashPassword(password: string) {
   const hash = await argon2.hash(password)
@@ -33,5 +34,20 @@ export function validateJWT(tokenString: string, secret: string): string {
   } catch {
     throw new unAuthorized401("UnAuthorized token")
   }
+}
+
+export function getBearerToken(req: Request): string {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader) {
+    throw new unAuthorized401("missing auth header ")
+  }
+  if (!authHeader.startsWith("Bearer ")) {
+    throw new unAuthorized401("invalid auth format")
+  }
+  const token = authHeader.split(" ")[1]
+  if (!token) {
+    throw new unAuthorized401("Empty Bearer token")
+  }
+  return token
 }
 

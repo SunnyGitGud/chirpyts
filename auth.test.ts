@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { makeJWT, validateJWT, hashPassword, checkPasswordHash } from "./src/auth.js";
+import { makeJWT, validateJWT, hashPassword, checkPasswordHash, getBearerToken } from "./src/auth.js";
 import { unAuthorized401 } from "./src/error.js"
 
 describe("Password Hashing", () => {
