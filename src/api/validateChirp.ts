@@ -1,7 +1,8 @@
-import { createChirp } from "../db/queries/chirps.js";
+import { createChirp, getChirpbyID, getChirps } from "../db/queries/chirps.js";
 import { badRequest400 } from "../error.js";
 import { Response, Request } from "express"
 import { respondWithJSON } from "../json.js";
+import { chirps } from "src/db/schema.js";
 
 export async function handlerchirp(req: Request, res: Response): Promise<void> {
   type parameter = {
@@ -14,6 +15,16 @@ export async function handlerchirp(req: Request, res: Response): Promise<void> {
   const Chirp = await createChirp({ body: cleaned, userId: params.userId })
 
   respondWithJSON(res, 201, Chirp)
+}
+
+export async function handlerChirpsRetrieve(_req: Request, res: Response) {
+  const chirps = await getChirps();
+  respondWithJSON(res, 200, chirps)
+}
+
+export async function handlerGetChirpByID(req: Request, res: Response) {
+  const [chirp] = await getChirpbyID(req.params.chirpID)
+  respondWithJSON(res, 200, chirp)
 }
 
 function validateChirp(body: string) {

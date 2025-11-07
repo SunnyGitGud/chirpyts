@@ -1,4 +1,4 @@
-import { createChirp } from "../db/queries/chirps.js";
+import { createChirp, getChirpbyID, getChirps } from "../db/queries/chirps.js";
 import { badRequest400 } from "../error.js";
 import { respondWithJSON } from "../json.js";
 export async function handlerchirp(req, res) {
@@ -6,6 +6,14 @@ export async function handlerchirp(req, res) {
     const cleaned = validateChirp(params.body);
     const Chirp = await createChirp({ body: cleaned, userId: params.userId });
     respondWithJSON(res, 201, Chirp);
+}
+export async function handlerChirpsRetrieve(_req, res) {
+    const chirps = await getChirps();
+    respondWithJSON(res, 200, chirps);
+}
+export async function handlerGetChirpByID(req, res) {
+    const [chirp] = await getChirpbyID(req.params.chirpID);
+    respondWithJSON(res, 200, chirp);
 }
 function validateChirp(body) {
     const maxChirpLength = 140;
