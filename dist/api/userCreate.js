@@ -18,6 +18,7 @@ export async function handlerUsersCreate(req, res) {
         email: user.email,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        isChirpyRed: user.isChirpyRed
     };
     respondWithJSON(res, 201, userWithoutPass);
 }
@@ -41,6 +42,7 @@ export async function handlerUpdateUser(req, res) {
         email: update.email,
         createdAt: update.createdAt,
         updatedAt: update.updatedAt,
+        isChirpyRed: update.isChirpyRed
     };
     respondWithJSON(res, 200, userWithoutPass);
 }

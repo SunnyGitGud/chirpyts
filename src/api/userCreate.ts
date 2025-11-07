@@ -3,7 +3,7 @@ import { respondWithJSON } from "../json.js";
 import { Request, Response } from "express"
 import { createUser, updateUserbyID } from "../db/queries/users.js";
 import { getBearerToken, hashPassword, validateJWT } from "../auth.js";
-import { newUser } from "../db/schema.js";
+import { newUser, } from "../db/schema.js";
 import { config } from "../config.js";
 
 export async function handlerUsersCreate(req: Request, res: Response): Promise<void> {
@@ -28,6 +28,7 @@ export async function handlerUsersCreate(req: Request, res: Response): Promise<v
     email: user.email,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    isChirpyRed: user.isChirpyRed
   };
 
   respondWithJSON(res, 201, userWithoutPass)
@@ -59,6 +60,7 @@ export async function handlerUpdateUser(req: Request, res: Response) {
     email: update.email,
     createdAt: update.createdAt,
     updatedAt: update.updatedAt,
+    isChirpyRed: update.isChirpyRed
   };
 
   respondWithJSON(res, 200, userWithoutPass)

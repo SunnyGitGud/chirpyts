@@ -29,7 +29,8 @@ export async function handlerLogin(req, res) {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
         token,
-        refreshToken
+        refreshToken,
+        isChirpyRed: user.isChirpyRed
     };
     respondWithJSON(res, 200, userWithoutPass);
 }

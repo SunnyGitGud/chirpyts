@@ -14,6 +14,7 @@ import { metricsHandler } from "./api/metrics.js";
 import { handlerUpdateUser, handlerUsersCreate } from "./api/userCreate.js"
 import { handlerchirp, handlerChirpsDelete, handlerChirpsRetrieve, handlerGetChirpByID } from "./api/Chirp.js";
 import { handlerLogin, handleRefresh, handleRevoke } from "./api/login.js";
+import { upgradeUser } from "./api/polka.js";
 
 const migrationClient = postgres(config.db.url, { max: 1 })
 await migrate(drizzle(migrationClient), config.db.migrationConfig)
@@ -69,6 +70,10 @@ app.post("/api/refresh", (req, res, next) => {
 });
 app.post("/api/revoke", (req, res, next) => {
   Promise.resolve(handleRevoke(req, res)).catch(next);
+});
+
+app.post("/api/polka/webhooks", (req, res, next) => {
+  Promise.resolve(upgradeUser(req, res)).catch(next);
 });
 
 app.get("/admin/metrics", metricsHandler)
