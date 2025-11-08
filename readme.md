@@ -45,14 +45,14 @@ Create a `.env` file in the project root containing:
 ```env
 DB_URL=postgres://postgres:password@localhost:5432/chirpy?sslmode=disable
 SECRET=<your-jwt-secret>
-POLKA_KEY=f271c81ff7084ee5b99a5091b42d486e
+POLKA_KEY=<polka>
 PORT=<port>
 PLATFORM="dev"
 ```
 
 - Generate `SECRET` using `openssl rand -base64 64` or similar.
 
-### 4. Run database migrations
+### 4. Run Drizzle-kit Generate
 If you use Goose:
 ```bash
 npm run generate
@@ -60,7 +60,7 @@ npm run generate
 
 Make sure PostgreSQL is running and `DB_URL` points to the correct database.
 
-### 5. Generate sqlc types (if using sqlc)
+### 5. Run Drizzle Migrations
 ```bash
 npm run migrate
 ```
