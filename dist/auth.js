@@ -47,3 +47,17 @@ export function getBearerToken(req) {
 export function makeRefreshToken() {
     return crypto.randomBytes(32).toString("hex");
 }
+export async function getAPIKey(req) {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+        throw new unAuthorized401("missing auth header ");
+    }
+    if (!authHeader.startsWith("ApiKey ")) {
+        throw new unAuthorized401("invalid auth format");
+    }
+    const apikey = authHeader.split(" ")[1];
+    if (!apikey) {
+        throw new unAuthorized401("Empty Api key");
+    }
+    return apikey;
+}
