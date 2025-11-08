@@ -53,7 +53,7 @@ PLATFORM="dev"
 - Generate `SECRET` using `openssl rand -base64 64` or similar.
 
 ### 4. Run Drizzle-kit Generate
-If you use Goose:
+If you use Drizzle:
 ```bash
 npm run generate
 ```
